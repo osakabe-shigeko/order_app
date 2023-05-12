@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        background-color:rgba(42, 53, 155, 0.394);
+        margin-top: 100px;
+        padding-left: 50px;}   
+      </style> 
+      <title>order list</title>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      // jQueryのコードを記述
+      $(function() {
+        $(document).on('keyup', 'input[name^="kosu_"]', function() { 
+        //金額の計算
+        let id = $(this).attr('name').replace('kosu_', '');
+        let kosu = $(this).val(); 
+        let price = $('#price_' + id).text();
+        let syokei = Math.floor(kosu * price);
+        $('#syokei_' + id).html(syokei);
+        //総合計の計算
+        var prices = 0;
+        $("td[id^=syokei]").each(function() {
+          prices += parseFloat($(this).text()) || 0;
+        });
+        $("#total").text(prices);
+        });
+      });
+
+      $(function() {
+        $(document).on('change', 'select[name^="name_"]', function() { 
+        let id = $(this).attr('name').replace('name_', '');
+        let kosu = parseInt($('#kosu_' + id).val());
+        let price = $('#price_' + id).text();
+        let syokei = Math.floor(kosu * price);  
+        console.log($('#kosu_' + id).val())
+        console.log($('#price_' + id).text())
+        console.log(syokei)
+        $('#syokei_' + id).html(syokei);
+        });
+      });
+
+    </script>
+    <script type="text/javascript">
+      //料理・ドリンク変更時
+      function updateBunrui2(value, bunrui2Name) {
+        var bunrui2List = {{bunrui2_list | tojson }};  //Jinja2の形式へ
+
+        var bunrui2Select = document.getElementsByName(bunrui2Name)[0]; //カテゴリのセレクトボックス取得
+        bunrui2Select.innerHTML = '';  //いったん空に
+        var option = document.createElement("option");
+        option.innerHTML = "選択してください";  //  1つ目のオプション
+        option.defaultSelected = true;  //  1つ目のオプションを初期選択
+        option.disabled = true; //  1つのオプションは選択不可
+        bunrui2Select.appendChild(option);
+
+        bunrui2List[value].forEach(function(bunrui2) {   //オプション設定
+          var option = document.createElement('option');
+          option.value = bunrui2;
+          option.text = bunrui2;
+          bunrui2Select.appendChild(option);
+        });
+      }
+      //カテゴリ変更時
+      function updatename(value, hinmeiName) {
+        var nameList = {{name_list | tojson }};  //Jinja2の形式へ
+
+        var nameSelect = document.getElementsByName(hinmeiName)[0]; //名前のセレクトボックス取得
+        nameSelect.innerHTML = '';  //いったん空に
+        var option = document.createElement("option");
+        option.innerHTML = "選択してください";  //  1つ目のオプション
+        option.defaultSelected = true;  //  1つ目のオプションを初期選択
+        option.disabled = true; //  1つのオプションは選択不可
+        nameSelect.appendChild(option);
+
+        for (var i = 0; i < nameList[value].length; i++) {
+          var option = document.createElement('option');
+          option.value = nameList[value][i][0];
+          option.text = nameList[value][i][0];
+          nameSelect.appendChild(option);
+        };
+      }
+
+      function updatePrice(value, bunrui2, priceName) {
+        var nameList = {{name_list | tojson }};  //Jinja2の形式へ
+        // カテゴリの値を得る
+        var selectElement = document.querySelector('select[name="' + bunrui2 + '"]');
+        var selectedOption = selectElement.options[selectElement.selectedIndex];
+        var bunrui2Value = selectedOption.value;
+       
+        // 選択された商品の価格を取得
+        var priceValue = 0;
+        for (var i = 0; i < nameList[bunrui2Value].length; i++) {
+          if (nameList[bunrui2Value][i][0] == value) {
+            var priceValue = nameList[bunrui2Value][i][1];
+          }
+        }
+        document.getElementById(priceName).innerHTML = priceValue;   
+
+        //総合計を再計算
+        var prices = 0;
+        prices = Array.from(document.querySelectorAll("td[id^=syokei]")).map(element => Number(element.textContent));
+          result = prices.reduce(function(sum, element){
+          return sum + element ;
+        })
+        document.getElementById("total").innerHTML = result;
+      }
+
+      </script>
+  </head>
+  <body>
+    <h1>お会計</h1>
+    <table>
+      <tr>
+        <th>メニュー番号</th>
+        <th>料理/ドリンク</th>
+        <th>カテゴリ</th>
+        <th>品名</th>
+        <th>個数</th>
+        <th>単価</th>
+        <th>金額</th>
+      </tr>
+
+      {% for item in regi_list %}
+      <tr>
+        <td>{{ item['id'] }}</td>
+          <td>
+        		<select id="bunrui1" name="bunrui1_{{ item['id'] }}" onchange="updateBunrui2(this.value, 'bunrui2_{{ item['id'] }}')">
+              {% for bunrui1 in bunrui1_list %}
+              <option value="{{ bunrui1 }}" {% if item['bunrui1'] == bunrui1 %}selected{% endif %}>{{ bunrui1 }}</option>
+              {% endfor %}
+            </select>
+          </td>          
+          <td>
+            <select id="bunrui2" name="bunrui2_{{ item['id'] }}" onchange="updatename(this.value, 'name_{{ item['id'] }}')">
+              {% for bunrui2 in bunrui2_list[item['bunrui1']] %}
+                <option value="{{ bunrui2 }}"{% if item['bunrui2'] == bunrui2 %}selected{% endif %}>{{ bunrui2 }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select id="name" name="name_{{ item['id'] }}" onchange="updatePrice(this.value, 'bunrui2_{{ item['id'] }}', 'price_{{ item['id'] }}')">
+              {% for name in name_list[item['bunrui2']] %}
+                <option value="{{ name[0] }}"{% if item['name'] == name[0] %}selected{% endif %}>{{ name[0] }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <input type="text" name="kosu_{{ item['id'] }}" size="5" value={{ item['kosu'] }}>
+          </td>
+          <td id="price_{{ item['id'] }}">
+            {{ item['price'] }}
+          </td>
+          <td id="syokei_{{ item['id'] }}">
+            {{ item['syokei'] }}
+            </td>
+        </tr>
+
+        {% endfor %} 
+ 
+    </table>
+    <table>
+    <tr>
+      <td>お支払い合計 ￥ </td>
+      <td id="total">{{ total }}</td> 
+    </tr>
+    </table>
+  </body>
+</html>
