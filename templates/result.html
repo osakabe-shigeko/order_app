@@ -15,9 +15,9 @@
     <script>
       // jQueryのコードを記述
       $(function() {
-        $(document).on('keyup', 'input[name^="kosu_"]', function() { 
+        $(document).on('keyup', 'input[id^="kosu_"]', function() { 
         //金額の計算
-        let id = $(this).attr('name').replace('kosu_', '');
+        let id = $(this).attr('id').replace('kosu_', '');
         let kosu = $(this).val(); 
         let price = $('#price_' + id).text();
         let syokei = Math.floor(kosu * price);
@@ -37,10 +37,16 @@
         let kosu = parseInt($('#kosu_' + id).val());
         let price = $('#price_' + id).text();
         let syokei = Math.floor(kosu * price);  
-        console.log($('#kosu_' + id).val())
+        console.log(kosu)
         console.log($('#price_' + id).text())
         console.log(syokei)
         $('#syokei_' + id).html(syokei);
+        //総合計の計算
+        var prices = 0;
+        $("td[id^=syokei]").each(function() {
+          prices += parseFloat($(this).text()) || 0;
+        });
+        $("#total").text(prices);
         });
       });
 
@@ -150,7 +156,7 @@
             </select>
           </td>
           <td>
-            <input type="text" name="kosu_{{ item['id'] }}" size="5" value={{ item['kosu'] }}>
+            <input type="text" id="kosu_{{ item['id'] }}" size="5" value={{ item['kosu'] }}>
           </td>
           <td id="price_{{ item['id'] }}">
             {{ item['price'] }}
