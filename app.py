@@ -30,7 +30,7 @@ def my_order(file_full_path):
     img = cv2.imread(file_full_path)
     
     # テンプレート画像を読み込み、グレースケールに変換
-    template = cv2.imread('C:/Users/hina-/Desktop/order_app/src/template.png', 0)
+    template = cv2.imread('template.png', 0)
     # 入力画像が3次元以上の場合は2次元に変換
     #if len(img.shape) > 2:
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
