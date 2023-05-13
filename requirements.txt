@@ -1,7 +1,9 @@
-# $ conda create --name <env> --file <this file>
-# This file may be used to create an environment using:
-# platform: win-64
-bzip2
+# $ conda create --name <env> --file <this file>
+
+# This file may be used to create an environment using:
+
+# platform: win-64
+
 ca-certificates
 click
 colorama
