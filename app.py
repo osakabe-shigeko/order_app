@@ -191,7 +191,7 @@ def order():
 
             # アップロード先のディレクトリを指定
             #upload_dir = '../imgs'
-            upload_dir = 'imgs'
+            upload_dir = '/imgs'
             # ファイルの保存
             file.save(os.path.join(upload_dir, file.filename))
             # 保存されたファイルのフルパスを取得
