@@ -190,7 +190,7 @@ def order():
         if file and allwed_file(file.filename):
 
             # アップロード先のディレクトリを指定
-            upload_dir = '../imgs/'
+            upload_dir = 'imgs'
             # ファイルの保存
             file.save(os.path.join(upload_dir, file.filename))
             # 保存されたファイルのフルパスを取得
@@ -213,7 +213,7 @@ def order():
             #単価DB(register.db)へ接続
             # threading.local() オブジェクトを作成する
             local = _thread._local()
-            dbname = './register.db'
+            dbname = 'src\register.db'
             local.conn = sqlite3.connect(dbname)
             # カーソルオブジェクトを作成
             cur = local.conn.cursor()
