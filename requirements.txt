@@ -1,67 +1,16 @@
-# $ conda create --name <env> --file <this file>
-
-# This file may be used to create an environment using:
-
-# platform: win-64
-
-ca-certificates
-click
-colorama
-flask
-freetype
-giflib
-gunicorn
-importlib-metadata
-itsdangerous
-jinja2
-jpeg
-leptonica
-lerc
-libarchive
-libdeflate
-libffi
-libiconv
-libpng
-libsqlite
-libtiff
-libwebp
-libwebp-base
-libxcb
-libxml2
-libzlib
-lz4-c
-lzo
-m2w64-gcc-libgfortran
-m2w64-gcc-libs
-m2w64-gcc-libs-core
-m2w64-gmp
-m2w64-libwinpthread-git
-markupsafe
-msys2-conda-epoch
-numpy
-opencv-python
-openjpeg
-openssl
-packaging
-pillow
-pip
-pthread-stubs
-pytesseract
-python
-python_abi
-setuptools
-tesseract
-tesserocr
-tk
-tzdata
-ucrt
-vc
-vs2015_runtime
-werkzeug
-wheel
-xorg-libxau
-xorg-libxdmcp
-xz
-zipp
-zlib
-zstd
+click @ file:///D:/bld/click_1666798499870/work
+colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1666700638685/work
+Flask @ file:///home/conda/feedstock_root/build_artifacts/flask_1676592993069/work
+gunicorn==20.1.0
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1681831559787/work
+itsdangerous @ file:///home/conda/feedstock_root/build_artifacts/itsdangerous_1648147185463/work
+Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1654302431367/work
+MarkupSafe @ file:///D:/bld/markupsafe_1674136063379/work
+numpy==1.24.2
+opencv-python==4.7.0.72
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1681337016113/work
+Pillow==9.4.0
+pytesseract @ file:///home/conda/feedstock_root/build_artifacts/pytesseract_1647306555263/work
+tesserocr==2.5.2
+Werkzeug @ file:///home/conda/feedstock_root/build_artifacts/werkzeug_1676411946679/work
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1677313463193/work
