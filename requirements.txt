@@ -15,8 +15,8 @@ pandas==1.2.4
 pillow==9.2.0 
 pip==23.1.2
 --find-links https://download.pytorch.org/whl/torch_stable.html
-pytorch-lightning==2.0.2
 torchvision==0.15.1+cpu
+pytorch-lightning==2.0.2
 torch==2.0.0+cpu
 MarkupSafe==2.1.1
 Werkzeug==2.1.2
