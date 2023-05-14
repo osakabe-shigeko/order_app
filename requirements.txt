@@ -15,7 +15,7 @@ pandas==1.2.4
 pillow==9.2.0 
 pip==23.1.2
 pytorch-lightning==1.5.8 
-torch==1.11.0+cpu
 torchvision==0.12.0+cpu
+torch==1.11.0+cpu
 MarkupSafe==2.1.1
 Werkzeug==2.1.2
