@@ -9,7 +9,13 @@ import base64
 #from flask_sqlalchemy import SQLAlchemy
 
 import cv2
-import pytesseract
+from PIL import Image
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import transforms
+import pytorch_lightning as pl
+#import pytesseract
 import re
 import _thread
 import sqlite3
@@ -18,12 +24,46 @@ import os
 
 #OCR実行関数
 #cv2.resize()にて拡大(Bicubic補間にて4倍に拡大)後、OCR実行するサンプル
-def img_to_text(img):
-    resized = cv2.resize(img, (img.shape[1]*8, img.shape[0]*8),interpolation=cv2.INTER_CUBIC)
-    result = pytesseract.image_to_string(img, lang="jpn", config="--psm 6")
-    result = result.replace('\n', '')
-    result = result.replace('\x0c', '')
-    return result
+#def img_to_text(img):
+#    resized = cv2.resize(img, (img.shape[1]*8, img.shape[0]*8),interpolation=cv2.INTER_CUBIC)
+#    result = pytesseract.image_to_string(img, lang="jpn", config="--psm 6")
+#    result = result.replace('\n', '')
+#    result = result.replace('\x0c', '')
+#    return result
+
+#MNIST分類
+# データセットの変換を定義
+transform = transforms.Compose([
+  transforms.ToTensor()
+])
+
+class Net(pl.LightningModule):
+
+    def __init__(self):
+        super().__init__()
+
+        self.conv = nn.Conv2d(in_channels=1, out_channels=3, kernel_size=3, padding=1)
+        self.bn = nn.BatchNorm2d(3)
+        self.fc = nn.Linear(588, 10)
+
+    def forward(self, x):
+        h = self.conv(x)
+        h = F.relu(h)
+        h = self.bn(h)
+        h = F.max_pool2d(h, kernel_size=2, stride=2)
+        h = h.view(-1, 588)
+        h = self.fc(h)
+        return h
+
+net = Net().cpu().eval()
+# 重みの読み込み
+net.load_state_dict(torch.load('mnist.pt', map_location=torch.device('cpu')))
+def mnist(img_tensor):
+    y = net(img_tensor)
+    y = F.softmax(y, dim=1)
+    y = torch.argmax(y)
+    y = y.item()
+    return(y)
 
 # オーダーリストを作る
 def my_order(file_full_path):
@@ -93,7 +133,9 @@ def my_order(file_full_path):
 
             # 回転した矩形領域を正方形に変換し、トリミング
             img_cut = cv2.warpPerspective(img, M, (width, height))
-
+            if len(img_cut.shape) == 2: # グレースケール画像の場合
+                img_cut = cv2.cvtColor(img_cut, cv2.COLOR_GRAY2BGR) # カラー画像に変換
+            
             #個数の黒文字があるかどうか判別する
             #青の色相の範囲を指定する
             #色相（Hue）、彩度（Saturation）、明度（Value）を指定
@@ -126,28 +168,112 @@ def my_order(file_full_path):
 
             # エッジの検出結果から映っているものがあるかどうかを判断する
             if cv2.countNonZero(edges_cut) > 10:
+                cv2.imwrite('imgs/img_cut.png', img_cut)
             #メニューidを取得
                 #メニューIDの部分、前3/1のみトリミングする
+                # 画像の高さ、幅を取得
+                #_, width, height= img_cut.shape[::-1]
+                # トリミングする幅を計算
+                #trim_width = int(width / 3)
+                # トリミングする範囲を指定
+                #start_x = 0
+                #start_y = 0
+                #end_x = trim_width
+                #end_y = height
+                # 画像をトリミング
+                #img_trim = img_cut[start_y:end_y, start_x:end_x]  
+                #trim_gray = cv2.cvtColor(img_trim, cv2.COLOR_RGB2GRAY)
+                #trim = cv2.adaptiveThreshold(trim_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY, 51, 20)
+                #if img_to_text(trim) == "":
+                #    id = 0     #id番号が読み取れないときは仕方ないので1
+                #else:
+                #    id = img_to_text(trim)  
+
+                keta = 0
+                img_gray = Image.open('imgs/img_cut.png').convert('L')
+                # 画像の幅と高さを取得
+                width, height = img_gray.size
+                # トリミングする幅を計算
+                trim_width = width*0.08
+                # トリミングする範囲を指定
+                x = 2
+                y = 3
+
+                # 画像1をトリミング
+                img_1 = img_gray.crop((x, y, x + trim_width, y + height-8))
+                img_array = np.array(img_1)
+                # 閾値を設定して2値化する
+                _, img_bin = cv2.threshold(img_array, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                # ガウシアンフィルタを適用する
+                blur = cv2.GaussianBlur(img_bin, (3, 3), 1)
+                # Cannyエッジ検出を適用する
+                edges_cut = cv2.Canny(blur , 200, 500)  
+                # 画像の非ゼロピクセル数をカウントする
+                count = cv2.countNonZero(edges_cut)
+                if count > 30:
+                    keta = 1
+                    # 画像を28x28にリサイズする
+                    img = cv2.resize(img_array, (28, 28))
+                    # テンソルに変換する
+                    img_tensor = img.reshape((1, 1, 28, 28))
+                    img_tensor = torch.tensor(img).unsqueeze(0).unsqueeze(0) / 255.0  # (1, 1, 28, 28)に変換し、値を0〜1に正規化する
+                    img1 = mnist(img_tensor)
+                    
+                # 画像2をトリミング
+                img_2 = img_gray.crop((x + trim_width, y, x + trim_width*2, y + y + height-8))
+                img_array = np.array(img_2)
+                # 閾値を設定して2値化する
+                _, img_bin = cv2.threshold(img_array, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                # ガウシアンフィルタを適用する
+                blur = cv2.GaussianBlur(img_bin, (3, 3), 1)
+                # Cannyエッジ検出を適用する
+                edges_cut = cv2.Canny(blur , 200, 500)  
+                # 画像の非ゼロピクセル数をカウントする
+                count = cv2.countNonZero(edges_cut)
+                if count > 30:
+                    keta = 2
+                    # 画像を28x28にリサイズする
+                    img = cv2.resize(img_array, (28, 28))
+                    # テンソルに変換する
+                    img_tensor = torch.tensor(img).unsqueeze(0).unsqueeze(0) / 255.0  # (1, 1, 28, 28)に変換し、値を0〜1に正規化する
+                    img2 = mnist(img_tensor)
+
+                # 画像3をトリミング
+                img_3 = img_gray.crop((x + trim_width*2, y, x + trim_width*3, y + y + height-8))
+                img_array = np.array(img_3)
+                # 閾値を設定して2値化する
+                _, img_bin = cv2.threshold(img_array, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                # ガウシアンフィルタを適用する
+                blur = cv2.GaussianBlur(img_bin, (3, 3), 1)
+                # Cannyエッジ検出を適用する
+                edges_cut = cv2.Canny(blur , 200, 500)  
+                # 画像の非ゼロピクセル数をカウントする
+                count = cv2.countNonZero(edges_cut)
+                if count > 30:
+                    keta = 3
+                    # 画像を28x28にリサイズする
+                    img = cv2.resize(img_array, (28, 28))
+                    # テンソルに変換する
+                    img_tensor = torch.tensor(img).unsqueeze(0).unsqueeze(0) / 255.0  # (1, 1, 28, 28)に変換し、値を0〜1に正規化する
+                    img3 = mnist(img_tensor)
+
+                #id
+                if keta == 1:
+                    id = img1
+                elif keta == 2:
+                    id = img1*10 + img2
+                elif keta == 3:
+                    id = img1*100 + img2*10 + img3
+                else:
+                    id = 0
+
+
+            #個数を取得
+                # Hough変換を行い、正の字から直線を検出
                 # 画像の高さ、幅を取得
                 _, width, height= img_cut.shape[::-1]
                 # トリミングする幅を計算
                 trim_width = int(width / 3)
-                # トリミングする範囲を指定
-                start_x = 0
-                start_y = 0
-                end_x = trim_width
-                end_y = height
-                # 画像をトリミング
-                img_trim = img_cut[start_y:end_y, start_x:end_x]  
-                trim_gray = cv2.cvtColor(img_trim, cv2.COLOR_RGB2GRAY)
-                trim = cv2.adaptiveThreshold(trim_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY, 51, 20)
-                if img_to_text(trim) == "":
-                    id = 0     #id番号が読み取れないときは仕方ないので1
-                else:
-                    id = img_to_text(trim)
-
-            #個数を取得
-                # Hough変換を行い、正の字から直線を検出
                 # 罫線を削除するために回りを削除
                 start_x = trim_width
                 start_y = 2
@@ -196,8 +322,7 @@ def order():
             file.save(os.path.join(upload_dir, file.filename))
             # 保存されたファイルのフルパスを取得
             file_full_path = os.path.join(upload_dir, file.filename)
-            print(os.path.join(upload_dir, file.filename))
-
+            
             #　画像ファイルに対する処理
             #　画像書き込み用バッファを確保
             #buf = io.BytesIO()
