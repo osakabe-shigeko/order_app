@@ -19,4 +19,4 @@ torchvision==0.15.1+cpu
 pytorch-lightning==2.0.2
 torch==2.0.0+cpu
 MarkupSafe==2.1.1
-Werkzeug==2.1.2
+Werkzeug==2.2.2
