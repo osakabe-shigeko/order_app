@@ -11,12 +11,13 @@ gunicorn==20.1.0
 jinja2==3.1.2
 numpy==1.19.3
 opencv-python==4.7.0.72
+python==3.8.12
 pandas==1.2.4
 pillow==9.2.0 
 pip==23.1.2
 --find-links https://download.pytorch.org/whl/torch_stable.html
-torchvision==0.15.1+cpu
-pytorch-lightning==2.0.2
 torch==2.0.0+cpu
+pytorch-lightning==2.0.2
+torchvision==0.15.1+cpu
 MarkupSafe==2.1.1
 Werkzeug==2.2.2
