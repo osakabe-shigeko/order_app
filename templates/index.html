@@ -4,28 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register App</title>
-    <!-- <link rel="stylesheet" href="./register.css">-->
-    <style>
-    body {
-      background-color:rgba(42, 53, 155, 0.394);
-      margin-top: 100px;
-      padding-left: 50px;}   
-    </style>  
+    <link rel="stylesheet" href="/images/register.css">
   </head>
   
-<body background-color:blue;>
-<h2>
-    注文ファイルをアップロードしてください
-</h2>
-<form method = post enctype = multipart/form-data>
-<p><input type = file name = filename>
-<input type = submit value = upload>
-</form>
-<!-- <h2>   -->
-<!-- <div class="sample-class"> -->
-<!--    メニュー追加へ  -->
-<!-- </div>  -->
-<!-- </h2>   -->
-<!-- <a href="/insert" role="button">menu</a>0  -->
+<body>
+  <table  width="500px">
+    <tr>
+      <td height = "50" colspan = "2">
+        <h2 style="color:white">注文ファイルをアップロードしてください</h2> 
+      </td>
+    </tr>
+    <tr>
+      <td  style = "text-align: center;">
+        <form method = post enctype = multipart/form-data>
+        <div class="formbottom">
+          <p class ="filebyn">
+            ここからファイルを選択
+          <input type = file name = filename>
+          </p>
+          <br><br><br>
+          <input type = submit value = "お会計へ" class="btns submit">
+        </div>
+      </form>
+      </td>
+      <td>
+      <div style = "text-align: right;">
+        <img src = {{'/images/g.png'}} alt='ござるさロゴ'>
+      </div>
+      </td>
+    </tr>
 </body>
 </html>
